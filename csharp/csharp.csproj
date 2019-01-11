@@ -21,7 +21,7 @@
   <ItemGroup>
     <Piggy Update="cuda.pig">
       <ClangOptions>"Ic:\Program Files\NVIDIA GPU Computing Toolkit\cuda\v10.0\include"</ClangOptions>
-      <ClangSourceFile>"C:\Users\Kenne\vector-sum-piggy\csharp\cuda-includes.cpp"</ClangSourceFile>
+      <ClangSourceFile>"cuda-includes.cpp"</ClangSourceFile>
       <AstOutputFile>generated.txt</AstOutputFile>
     </Piggy>
   </ItemGroup>

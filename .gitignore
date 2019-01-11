@@ -1,1 +1,5 @@
 cuda/x64/
+.vs/
+csharp/bin/
+csharp/obj/
+x64/
