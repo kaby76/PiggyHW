@@ -25,7 +25,7 @@ extern "C" {
     /**
      * Vector sum on the GPU: C = A + B
      */
-    __global__ void VectorSumParallel(float *A, float *B, float *C, int n)
+    __global__ void VectorSumParallel(int *A, int *B, int *C, int n)
     {
         int i = blockDim.x * blockIdx.x + threadIdx.x;
         if (i < n)
