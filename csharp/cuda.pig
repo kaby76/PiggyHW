@@ -1,52 +1,14 @@
+using 'ClangSupport.pig';
 using 'Enums.pig';
 using 'Structs.pig';
 using 'Funcs.pig';
 using 'Namespace.pig';
 using 'Typedefs.pig';
 
-template CudaNamespace : Namespace
+template CudaClangSupport : ClangSupport
 {
     init {{
         namespace_name = "Cuda";
-        PiggyRuntime.TemplateHelpers.ModParamUsageType(
-            new Dictionary<string, string>() {
-            { "const char **", "out IntPtr" },
-            { "char *", "[Out] byte[]"},
-            { "unsigned int *", "out uint" },
-            { "void **", "out IntPtr" },
-            { "void *", "IntPtr" },
-            { "const char *", "string" },
-            { "const void *", "IntPtr" },
-            { "const <type> *", "in <type>"},
-        });
-        PiggyRuntime.TemplateHelpers.ModNonParamUsageType(
-            new Dictionary<string, string>() {
-            { "char *", "byte[]"},
-            { "size_t", "SizeT" },
-            { "int", "int"},
-            { "uint", "uint"},
-            { "short", "short"},
-            { "ushort", "ushort"},
-            { "long", "long"},
-            { "unsigned char", "byte" },
-            { "unsigned short", "UInt16"},
-            { "unsigned int", "uint"},
-            { "unsigned long", "ulong"},
-            { "unsigned long long", "ulong"},
-            { "long long", "long"},
-            { "float", "float"},
-            { "double", "double"},
-            { "bool", "bool"},
-            { "char", "byte"},
-            { "const char *", "string" },
-    });
-    }}
-}
-
-template CudaEnums : Enums
-{
-    init {{
-        // Override limits in matching.
         limit = ".*\\.*GPU.*\\.*";
         var list = new List<string>() {
             "cudaError_enum",
@@ -54,29 +16,7 @@ template CudaEnums : Enums
             "CUjit_option_enum",
             "CUmemAttach_flags_enum",
             "CUjitInputType_enum",
-            };
-        generate_for_only = String.Join("|", list);
-    }}
-}
-
-template CudaStructs : Structs
-{
-    init {{
-        // Override limits in matching.
-        limit = ".*\\.*GPU.*\\.*";
-        var list = new List<string>() {
-            "CUdevprop",
-            };
-        generate_for_only = String.Join("|", list);
-    }}
-}
-
-template CudaTypedefs : Typedefs
-{
-    init {{
-        // Override limits in matching.
-        limit = ".*\\.*GPU.*\\.*";
-        var list = new List<string>() {
+             "CUdevprop",
             "^CUresult$",
             "^CUcontext$",
             "^CUfunction$",
@@ -87,17 +27,6 @@ template CudaTypedefs : Typedefs
             "^CUjit_option$",
             "^CUdeviceptr$",
             "^CUdevprop$",
-            };
-        generate_for_only = String.Join("|", list);
-    }}
-}
-
-
-template CudaFuncs : Funcs
-{
-    init {{
-        limit = ".*\\.*GPU.*\\.*";
-        var list = new List<string>() {
             "^cuCtxCreate_v2$",
             "^cuCtxDestroy_v2",
             "^cuCtxSynchronize$",
@@ -120,8 +49,15 @@ template CudaFuncs : Funcs
             "^cuModuleGetFunction$",
             "^cuModuleGetGlobal_v2$",
             "^cuModuleLoadData$",
-            };
+           };
         generate_for_only = String.Join("|", list);
+        dllname = "nvcuda";
+    }}
+}
+
+template CudaFuncs : Funcs
+{
+    init {{
         details = new List<generate_type>()
             {
                 { new generate_type()
@@ -132,17 +68,16 @@ template CudaFuncs : Funcs
                     }
                 }
             }; // default for everything.
-        dllname = "nvcuda";
     }}
 
     pass Functions {
-        ( FunctionDecl SrcRange=$"{CudaFuncs.limit}" Name="cuModuleLoadDataEx"
+        ( FunctionDecl SrcRange=$"{ClangSupport.limit}" Name="cuModuleLoadDataEx"
             [[ [DllImport("nvcuda", CallingConvention = CallingConvention.Cdecl, EntryPoint = "cuModuleLoadDataEx")]
             public static extern CUresult cuModuleLoadDataEx(out CUmodule jarg1, IntPtr jarg2, uint jarg3, CUjit_option[] jarg4, IntPtr jarg5);
             
             ]]
         )
-        ( FunctionDecl SrcRange=$"{CudaFuncs.limit}" Name="cuLaunchKernel"
+        ( FunctionDecl SrcRange=$"{ClangSupport.limit}" Name="cuLaunchKernel"
             [[ [DllImport("nvcuda", CallingConvention = CallingConvention.Cdecl, EntryPoint = "cuLaunchKernel")]
             public static extern CUresult cuLaunchKernel(CUfunction f, uint gridDimX, uint gridDimY, uint gridDimZ, uint blockDimX, uint blockDimY, uint blockDimZ, uint sharedMemBytes, CUstream hStream, IntPtr kernelParams, IntPtr extra);
             
@@ -152,11 +87,12 @@ template CudaFuncs : Funcs
 }
 
 application
-    CudaNamespace.GenerateStart
-    CudaEnums.GenerateEnums
-    CudaTypedefs.GeneratePointerTypes
-    CudaStructs.GenerateStructs
-    CudaTypedefs.GenerateTypedefs
+    CudaClangSupport.Start
+	Namespace.GenerateStart
+    Enums.GenerateEnums
+    Typedefs.GeneratePointerTypes
+    Structs.GenerateStructs
+    Typedefs.GenerateTypedefs
     CudaFuncs.Start
     CudaFuncs.Functions
     CudaFuncs.End
