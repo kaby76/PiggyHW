@@ -23,6 +23,7 @@
       <ClangOptions>"Ic:\Program Files\NVIDIA GPU Computing Toolkit\cuda\v10.0\include"</ClangOptions>
       <ClangSourceFile>"cuda-includes.cpp"</ClangSourceFile>
       <AstOutputFile>ast.txt</AstOutputFile>
+      <OutputFile>.</OutputFile>
     </Piggy>
   </ItemGroup>
 

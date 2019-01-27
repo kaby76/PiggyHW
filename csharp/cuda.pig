@@ -16,7 +16,7 @@ template CudaClangSupport : ClangSupport
             "CUjit_option_enum",
             "CUmemAttach_flags_enum",
             "CUjitInputType_enum",
-             "CUdevprop",
+            "CUdevprop",
             "^CUresult$",
             "^CUcontext$",
             "^CUfunction$",
@@ -88,7 +88,7 @@ template CudaFuncs : Funcs
 
 application
     CudaClangSupport.Start
-	Namespace.GenerateStart
+    Namespace.GenerateStart
     Enums.GenerateEnums
     Typedefs.GeneratePointerTypes
     Structs.GenerateStructs
