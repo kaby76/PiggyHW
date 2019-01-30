@@ -30,21 +30,25 @@ namespace test
             {
                 Cuda.Functions.cuInit(0);
 
-                var res = Cuda.Functions.cuDeviceGetCount(out int count);
+                int count = 0;
+                var res = Cuda.Functions.cuDeviceGetCount(ref count);
                 if (res.Value != cudaError_enum.CUDA_SUCCESS) throw new Exception();
 
                 for (int deviceID = 0; deviceID < count; ++deviceID)
                 {
-                    res = Cuda.Functions.cuDeviceGet(out CUdevice device, deviceID);
+                    CUdevice device = default(CUdevice);
+                    res = Cuda.Functions.cuDeviceGet(ref device, deviceID);
                     if (res.Value != cudaError_enum.CUDA_SUCCESS) throw new Exception();
-
                     byte[] name = new byte[100];
-                    res = Cuda.Functions.cuDeviceGetName(name, 100, device);
+                    fixed (void* p = name)
+                    {
+                        res = Cuda.Functions.cuDeviceGetName((IntPtr)p, 100, device);
+                    }
                     if (res.Value != cudaError_enum.CUDA_SUCCESS) throw new Exception();
                     System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
                     string n = enc.GetString(name).Replace("\0", "");
-
-                    res = Cuda.Functions.cuDeviceGetProperties(out CUdevprop props, device);
+                    CUdevprop props = default(CUdevprop);
+                    res = Cuda.Functions.cuDeviceGetProperties(ref props, device);
                     if (res.Value != cudaError_enum.CUDA_SUCCESS) throw new Exception();
 
                     System.Console.WriteLine("--------");
@@ -52,9 +56,11 @@ namespace test
                 }
 
                 {
-                    res = Cuda.Functions.cuDeviceGet(out CUdevice device, 0);
+                    CUdevice device = default(CUdevice);
+                    res = Cuda.Functions.cuDeviceGet(ref device, 0);
                     if (res.Value != cudaError_enum.CUDA_SUCCESS) throw new Exception();
-                    res = Cuda.Functions.cuCtxCreate_v2(out CUcontext cuContext, 0, device);
+                    CUcontext cuContext = default(CUcontext);
+                    res = Cuda.Functions.cuCtxCreate_v2(ref cuContext, 0, device);
                     if (res.Value != cudaError_enum.CUDA_SUCCESS) throw new Exception();
                     string kernel = @"
 //
@@ -97,15 +103,19 @@ BB0_2:
             }
             ";
                     IntPtr ptr = Marshal.StringToHGlobalAnsi(kernel);
-                    res = Functions.cuModuleLoadData(out CUmodule cuModule, ptr);
+                    CUmodule cuModule = default(CUmodule);
+                    res = Functions.cuModuleLoadData(ref cuModule, ptr);
                     if (res.Value != cudaError_enum.CUDA_SUCCESS) throw new Exception();
-                    res = Functions.cuModuleGetFunction(out CUfunction helloWorld, cuModule, "_Z4kernPi");
+                    CUfunction helloWorld = default(CUfunction);
+                    var fun = Marshal.StringToHGlobalAnsi("_Z4kernPi");
+                    res = Functions.cuModuleGetFunction(ref helloWorld, cuModule, fun);
                     if (res.Value != cudaError_enum.CUDA_SUCCESS) throw new Exception();
                     int[] v = { 'G', 'd', 'k', 'k', 'n', (char)31, 'v', 'n', 'q', 'k', 'c' };
                     GCHandle handle = GCHandle.Alloc(v, GCHandleType.Pinned);
                     IntPtr pointer = IntPtr.Zero;
                     pointer = handle.AddrOfPinnedObject();
-                    res = Functions.cuMemAlloc_v2(out CUdeviceptr dptr, 11 * sizeof(int));
+                    CUdeviceptr dptr = default(CUdeviceptr);
+                    res = Functions.cuMemAlloc_v2(ref dptr, 11 * sizeof(int));
                     if (res.Value != cudaError_enum.CUDA_SUCCESS) throw new Exception();
                     res = Functions.cuMemcpyHtoD_v2(dptr, pointer, 11 * sizeof(int));
                     if (res.Value != cudaError_enum.CUDA_SUCCESS) throw new Exception();
@@ -134,9 +144,11 @@ BB0_2:
                 }
 
                 {
-                    res = Cuda.Functions.cuDeviceGet(out CUdevice device, 0);
+                    CUdevice device = default(CUdevice);
+                    res = Cuda.Functions.cuDeviceGet(ref device, 0);
                     if (res.Value != cudaError_enum.CUDA_SUCCESS) throw new Exception();
-                    res = Cuda.Functions.cuCtxCreate_v2(out CUcontext cuContext, 0, device);
+                    CUcontext cuContext = default(CUcontext);
+                    res = Cuda.Functions.cuCtxCreate_v2(ref cuContext, 0, device);
                     if (res.Value != cudaError_enum.CUDA_SUCCESS) throw new Exception();
                     string path = Assembly.GetAssembly(typeof(Program)).Location;
                     path = Path.GetDirectoryName(path);
@@ -145,19 +157,25 @@ BB0_2:
                     StreamReader sr = new StreamReader(path);
                     String ptx = sr.ReadToEnd();
                     IntPtr ptr = Marshal.StringToHGlobalAnsi(ptx);
-                    res = Cuda.Functions.cuModuleLoadData(out CUmodule module, ptr);
+                    CUmodule module = default(CUmodule);
+                    res = Cuda.Functions.cuModuleLoadData(ref module, ptr);
                     if (res.Value != cudaError_enum.CUDA_SUCCESS) throw new Exception();
-                    res = Cuda.Functions.cuModuleGetFunction(out CUfunction helloWorld, module, "VectorSumParallel");
+                    CUfunction helloWorld = default(CUfunction);
+                    var fun = Marshal.StringToHGlobalAnsi("VectorSumParallel");
+                    res = Cuda.Functions.cuModuleGetFunction(ref helloWorld, module, fun);
                     if (res.Value != cudaError_enum.CUDA_SUCCESS) throw new Exception();
                     int n = 3;
                     int[] a = Enumerable.Range(1, 3).Select(v => v * 3).ToArray();
                     int[] b = Enumerable.Range(1, 3).Select(v => v * 2).ToArray();
                     int[] c = new int[3];
-                    res = Cuda.Functions.cuMemAlloc_v2(out CUdeviceptr d_a, n * sizeof(int));
+                    CUdeviceptr d_a = default(CUdeviceptr);
+                    CUdeviceptr d_b = default(CUdeviceptr);
+                    CUdeviceptr d_c = default(CUdeviceptr);
+                    res = Cuda.Functions.cuMemAlloc_v2(ref d_a, n * sizeof(int));
                     if (res.Value != cudaError_enum.CUDA_SUCCESS) throw new Exception();
-                    res = Cuda.Functions.cuMemAlloc_v2(out CUdeviceptr d_b, n * sizeof(int));
+                    res = Cuda.Functions.cuMemAlloc_v2(ref d_b, n * sizeof(int));
                     if (res.Value != cudaError_enum.CUDA_SUCCESS) throw new Exception();
-                    res = Cuda.Functions.cuMemAlloc_v2(out CUdeviceptr d_c, n * sizeof(int));
+                    res = Cuda.Functions.cuMemAlloc_v2(ref d_c, n * sizeof(int));
                     if (res.Value != cudaError_enum.CUDA_SUCCESS) throw new Exception();
                     var ha = GCHandle.Alloc(a, GCHandleType.Pinned);
                     var hb = GCHandle.Alloc(b, GCHandleType.Pinned);
