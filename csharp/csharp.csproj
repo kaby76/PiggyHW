@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="piggy" Version="1.0.11">
+    <PackageReference Include="piggy" Version="1.0.12">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
@@ -23,7 +23,7 @@
       <ClangOptions>"Ic:\Program Files\NVIDIA GPU Computing Toolkit\cuda\v10.0\include"</ClangOptions>
       <ClangSourceFile>"cuda-includes.cpp"</ClangSourceFile>
       <AstOutputFile>ast.txt</AstOutputFile>
-      <OutputFile>.</OutputFile>
+      <OutputFile>"c:/temp/output"</OutputFile>
     </Piggy>
   </ItemGroup>
 
